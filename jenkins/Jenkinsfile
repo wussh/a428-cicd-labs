@@ -34,7 +34,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
                         sh "ssh -i '$SSH_KEY' ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
-                        sh "ssh -i '$SSH_KEY' ${EC2_USER}@${EC2_HOST} 'docker run -d -p 2000:3000 ${DOCKER_IMAGE}'"
+                        sh "ssh -i '$SSH_KEY' ${EC2_USER}@${EC2_HOST} 'docker run -d -p 2000:80 ${DOCKER_IMAGE}'"
                     }
                 }
             }
