@@ -9,7 +9,6 @@ pipeline {
         CI = 'true'
         EC2_USER = 'ubuntu'
         EC2_HOST = '52.77.209.117'
-        EC2_KEY_FILE = credentials('wushsecret')
         DOCKER_IMAGE = 'wushie/react-app'
     }
     stages {
@@ -27,8 +26,8 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
-                        sh "ssh -i ${EC2_KEY_FILE} ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
-                        sh "ssh -i ${EC2_KEY_FILE} ${EC2_USER}@${EC2_HOST} 'docker run -d -p 3000:3000 ${DOCKER_IMAGE}'"
+                        sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
+                        sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker run -d -p 3000:3000 ${DOCKER_IMAGE}'"
                     }
                 }
             }
