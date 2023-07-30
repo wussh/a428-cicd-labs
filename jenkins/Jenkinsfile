@@ -32,7 +32,7 @@ pipeline {
         stage('Deploy to EC2') {
             agent any
             steps {
-                script {
+                node { // Tambahkan langkah 'node' di sini
                     withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
                         sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
                         sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker run -d -p 3000:3000 ${DOCKER_IMAGE}'"
@@ -43,7 +43,7 @@ pipeline {
         stage('Stop Container on EC2') {
             steps {
                 input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
-                script {
+                node { // Tambahkan langkah 'node' di sini
                     withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
                         sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE})'"
                     }
