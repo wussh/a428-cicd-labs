@@ -4,13 +4,13 @@ pipeline {
         EC2_USER = 'ubuntu'
         EC2_HOST = '52.77.209.117'
         EC2_KEY_FILE = credentials('wushsecret')
-        DOCKER_IMAGE = 'wushie/react-app'
+        DOCKER_IMAGE = 'wushie/react-app' // Ganti dengan nama Docker image Anda di Docker Hub
     }
     stages {
         stage('Build') {
             agent {
                 docker {
-                    image 'node:16-buster-slim'
+                    image 'node:lts-buster-slim'
                     args '-p 3000:3000'
                 }
             }
@@ -21,7 +21,7 @@ pipeline {
         stage('Test') {
             agent {
                 docker {
-                    image 'node:16-buster-slim'
+                    image 'node:lts-buster-slim'
                     args '-p 3000:3000'
                 }
             }
@@ -30,18 +30,23 @@ pipeline {
             }
         }
         stage('Deploy to EC2') {
+            agent any
             steps {
-                withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
-                    sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
-                    sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker run -d -p 3000:3000 ${DOCKER_IMAGE}'"
+                script {
+                    withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
+                        sh "ssh -i ${EC2_KEY_FILE} ${EC2_USER}@${EC2_HOST} 'docker pull ${DOCKER_IMAGE}'"
+                        sh "ssh -i ${EC2_KEY_FILE} ${EC2_USER}@${EC2_HOST} 'docker run -d -p 3000:3000 ${DOCKER_IMAGE}'"
+                    }
                 }
             }
         }
         stage('Stop Container on EC2') {
             steps {
                 input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
-                withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
-                    sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE})'"
+                script {
+                    withCredentials([file(credentialsId: 'wushsecret', variable: 'SSH_KEY')]) {
+                        sh "ssh -i $SSH_KEY ${EC2_USER}@${EC2_HOST} 'docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE})'"
+                    }
                 }
             }
         }
